@@ -15,9 +15,11 @@ chmod +x ./rotate_logs.sh
 
 Bug 2:
 PREDICT:
-
+By reading the code, I found that if no arguments are supplied, I predict that the script will attempt to use empty or unset positional parameters and eventually fail.
 RUN:
-
+bash rotate_logs.sh
+bash: rotate_logs.sh: No such file or directory
 EXPLAIN:
-
+Since there is no set -u, so if there is no argument provided, there is no error.
 Fix:
+set -euo pipefail
