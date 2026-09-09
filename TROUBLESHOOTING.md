@@ -17,9 +17,19 @@ Bug 2:
 PREDICT:
 By reading the code, I found that if no arguments are supplied, I predict that the script will attempt to use empty or unset positional parameters and eventually fail.
 RUN:
-bash rotate_logs.sh
-bash: rotate_logs.sh: No such file or directory
+~/Fix-Log-Rotation-Script$ bash rotate_logs.sh
+rotate_logs.sh: line 4: $1: unbound variable
 EXPLAIN:
 Since there is no set -u, so if there is no argument provided, there is no error.
 Fix:
 set -euo pipefail
+
+Bug 3:
+PREDICT:
+$(ls...) is not a correct way to create a diroctory list.
+RUN:
+
+EXPLAIN:
+
+Fix:
+for f in "$log_dir"/*.log; do
