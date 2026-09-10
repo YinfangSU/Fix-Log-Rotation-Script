@@ -10,8 +10,12 @@ Because rotate_logs.sh has 644 permissions, which means:
 owner   group   others
  rw-     r--      r--
 
+And I need rotate_logs.sh is executable, which means it should has 755 permissions, which are:
+owner   group   others
+ rwx     r-x      r-x
+
 Fix:
-chmod +x ./rotate_logs.sh
+chmod 755 rotate_logs.sh
 
 Bug 2:
 PREDICT:
