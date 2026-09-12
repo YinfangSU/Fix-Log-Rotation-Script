@@ -1,4 +1,4 @@
-Bug 1:
+Bug 1: Missing execution permission
 PREDICT:
 I predict that executing it directly with ./rotate_logs.sh will fail with lacking excution access "Permission denied".
 
@@ -17,23 +17,66 @@ owner   group   others
 Fix:
 chmod 755 rotate_logs.sh
 
-Bug 2:
+Bug 2: Missing argument validation
 PREDICT:
-By reading the code, I found that if no arguments are supplied, I predict that the script will attempt to use empty or unset positional parameters and eventually fail.
+By reading the code, I found that if no arguments are supplied, I predicted that running the script without arguments would cause the script to fail because `$1` and `$2` were not provided.
+
 RUN:
 ~/Fix-Log-Rotation-Script$ bash rotate_logs.sh
 rotate_logs.sh: line 4: $1: unbound variable
+
 EXPLAIN:
 Since there is no set -u, so if there is no argument provided, there is no error.
+
 Fix:
 set -euo pipefail
 
-Bug 3:
+-e
+→ command exit when failed
+
+-u
+→ given the error when using undefined variables
+
+-o pipefail
+→ failures in pipeline won't be ignored 
+
+Add validation before reading arguments, and adding "" on arguments to avoid reading blank space as seperator in file name.
+if [[ $# -ne 2 ]]; then
+    echo "Usage: $0 <archive_dir> <log_dir>" >&2
+    exit 1
+fi
+
+Bug 3: ls is unsafe file iteration
 PREDICT:
-$(ls...) is not a correct way to create a diroctory list.
+$(ls...) is not a correct way to create a diroctory list. I predicted that using `ls` inside command substitution would break
+filenames containing spaces because the output would be split into
+separate words.
+
+RUN:
+I created a test file named:
+
+    my application.log
+
+Then I ran:
+
+    bash -x rotate_logs.sh archive test_logs
+
+The trace showed that the filename was split instead of being treated
+as one pathname.
+
+EXPLAIN:
+The expression `$(ls ...)` produces text output. Bash then performs
+word splitting on that output. Therefore a filename containing spaces
+can be split into multiple loop items.
+
+Fix:
+for f in "$log_dir"/*.log; do
+
+Bug 4:
+PREDICT:
+
 RUN:
 
 EXPLAIN:
 
 Fix:
-for f in "$log_dir"/*.log; do
