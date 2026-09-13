@@ -133,6 +133,54 @@ Did you mean:
 
 
 Bug 6:Initialization 
+PREDICT: I predicted that the count variable would cause a problem because it was used before being initialized.
+The original code contains:
+count=$count+1
+but there is no previous assignment such as:
+count=0
+I also predicted that count=$count+1 would not perform arithmetic addition in Bash.
 
+RUN:
+bash -x rotate_logs.sh archive test_logs
++ set -euo pipefail
++ [[ 2 -ne 2 ]]
++ archive_dir=archive
++ log_dir=test_logs
++ for f in "$log_dir"/*.log
+++ find 'test_logs/my application.log' -mtime +7
++ age=
++ '[' '' ']'
++ for f in "$log_dir"/*.log
+++ find test_logs/normal.log -mtime +7
++ age=
++ '[' '' ']'
++ for f in "$log_dir"/*.log
+++ find 'test_logs/old application.log' -mtime +7
++ age=
++ '[' '' ']'
++ for f in "$log_dir"/*.log
+++ find test_logs/old.log -mtime +7
++ age=
++ '[' '' ']'
++ for f in "$log_dir"/*.log
+++ find test_logs/recent.log -mtime +7
++ age=
++ '[' '' ']'
+rotate_logs.sh: line 23: count: unbound variable
+
+The trace showed that the count variable was used before it had been initialized.
+
+EXPLAIN:
+The variable count should store the number of archived files, so it needs an initial value of 0 before the loop starts.
+Also, in Bash:
+count=$count+1
+does not mean "add 1 to count". It is a normal variable assignment, so Bash treats the right-hand side as a string.
+For arithmetic operations, Bash uses arithmetic expansion:
+count=$((count + 1))
+
+Fix:
+I initialized count before the loop:
 count=0
 
+and changed the counter operation to:
+count=$((count + 1))
