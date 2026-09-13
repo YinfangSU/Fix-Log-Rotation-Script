@@ -48,8 +48,7 @@ fi
 
 Bug 3: ls is unsafe file iteration
 PREDICT:
-$(ls...) is not a correct way to create a diroctory list. I predicted that using `ls` inside command substitution would break
-filenames containing spaces because the output would be split into
+$(ls...) is not a correct way to create a diroctory list. I predicted that using `ls` inside command substitution would break filenames containing spaces because the output would be split into
 separate words.
 
 RUN:
@@ -65,9 +64,7 @@ The trace showed that the filename was split instead of being treated
 as one pathname.
 
 EXPLAIN:
-The expression `$(ls ...)` produces text output. Bash then performs
-word splitting on that output. Therefore a filename containing spaces
-can be split into multiple loop items.
+The expression `$(ls ...)` produces text output. Bash then performs word splitting on that output. Therefore a filename containing spaces can be split into multiple loop items.
 
 Fix:
 for f in "$log_dir"/*.log; do
