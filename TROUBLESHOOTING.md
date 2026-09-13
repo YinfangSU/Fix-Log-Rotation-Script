@@ -69,11 +69,70 @@ The expression `$(ls ...)` produces text output. Bash then performs word splitti
 Fix:
 for f in "$log_dir"/*.log; do
 
-Bug 4:
-PREDICT:
+Bug 5:Syntax error
+There should be no blank space between variable and assign.
+archive_dir="$1"
+log_dir="$2"
 
+Codes are not formatting.
+for f in "$log_dir"/*.log; do
+  age=$(find $f -mtime +7)if [ $age ]; thenmv $f $archive_dir/
+    count=$count+1fidoneecho "Archived $count files"
+
+They should look like:
+for f in "$log_dir"/*.log; do
+  age=$(find $f -mtime +7)
+  if [ $age ]; then
+    mv $f $archive_dir/
+    count=$count+1
+    fi
+    done
+echo "Archived $count files"
+
+We use shellcheck to identify bugs, it told us:
+In rotate_logs.sh line 16:
+  if [ $age ]; then
+       ^--^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+  if [ "$age" ]; then
+
+
+In rotate_logs.sh line 17:
+    mv $f $archive_dir/
+       ^-- SC2086 (info): Double quote to prevent globbing and word splitting.
+          ^----------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean: 
+    mv "$f" "$archive_dir"/
+
+So we double quote the variables.
 RUN:
 
-EXPLAIN:
+I ran ShellCheck:
 
-Fix:
+shellcheck rotate_logs.sh
+
+ShellCheck reported:
+
+In rotate_logs.sh line 16:
+  if [ $age ]; then
+       ^--^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean:
+  if [ "$age" ]; then
+
+
+In rotate_logs.sh line 17:
+    mv $f $archive_dir/
+       ^-- SC2086 (info): Double quote to prevent globbing and word splitting.
+          ^----------^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean:
+    mv "$f" "$archive_dir"/
+
+
+Bug 6:Initialization 
+
+count=0
+
